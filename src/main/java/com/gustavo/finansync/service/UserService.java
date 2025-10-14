@@ -49,4 +49,13 @@ public class UserService {
         }
         return usuario;
     }
+
+    /**
+     * NOVO MÉTODO: Busca um usuário pelo e-mail.
+     * Será usado pelos controllers para obter o usuário logado.
+     */
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Usuário autenticado não encontrado no banco de dados."));
+    }
 }

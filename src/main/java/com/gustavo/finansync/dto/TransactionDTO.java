@@ -8,6 +8,6 @@ public record TransactionDTO(
         Long id,
         String description,
         BigDecimal amount,
-        LocalDate date,
+        LocalDate transactionDate,
         TransactionType type
 ) {}

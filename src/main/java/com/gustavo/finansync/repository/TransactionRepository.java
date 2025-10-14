@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository para operações CRUD da entidade Transaction
@@ -21,6 +22,9 @@ import java.util.List;
  */
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+
+    Optional<Transaction> findByIdAndUser(Long id, User user);
+
 
     /**
      * Busca transações de um usuário com paginação
@@ -124,9 +128,4 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      * @return Número total de transações
      */
     long countByUser(User user);
-
-    /**
-     * Busca transações paginadas, filtrando pela descrição (ignorando maiúsculas/minúsculas).
-     */
-    Page<Transaction> findByDescriptionContainingIgnoreCase(String description, Pageable pageable);
 }
