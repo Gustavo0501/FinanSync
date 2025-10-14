@@ -124,4 +124,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      * @return Número total de transações
      */
     long countByUser(User user);
+
+    /**
+     * Busca transações paginadas, filtrando pela descrição (ignorando maiúsculas/minúsculas).
+     */
+    Page<Transaction> findByDescriptionContainingIgnoreCase(String description, Pageable pageable);
 }
