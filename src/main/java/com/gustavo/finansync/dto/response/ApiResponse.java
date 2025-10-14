@@ -1,4 +1,4 @@
-package com.gustavo.finansync.dto;
+package com.gustavo.finansync.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -46,8 +46,12 @@ public class ApiResponse<T> {
         return new ApiResponse<>(false, null, null, error);
     }
 
-    public static <T> ApiResponse<T> error(String message, String error) {
-        return new ApiResponse<>(false, message, null, error);
+    public static <T> ApiResponse<T> error(String message, T errorData) {
+        ApiResponse<T> response = new ApiResponse<>();
+        response.setSuccess(false);
+        response.setMessage(message);
+        response.setData(errorData); // Usamos o campo 'data' para carregar o objeto de erro
+        return response;
     }
 
     // Getters e Setters

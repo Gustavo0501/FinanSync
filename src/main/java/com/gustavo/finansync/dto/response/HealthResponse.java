@@ -1,4 +1,4 @@
-package com.gustavo.finansync.dto;
+package com.gustavo.finansync.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
