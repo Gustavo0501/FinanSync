@@ -2,6 +2,7 @@ package com.gustavo.finansync.service;
 
 import com.gustavo.finansync.dto.TransactionDTO;
 import com.gustavo.finansync.entity.Transaction;
+import com.gustavo.finansync.entity.TransactionSource;
 import com.gustavo.finansync.entity.User;
 import com.gustavo.finansync.repository.TransactionRepository;
 import com.gustavo.finansync.repository.UserRepository;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class TransactionService {
@@ -127,6 +130,20 @@ public class TransactionService {
                 transaction.getTransactionDate(),
                 transaction.getType()
         );
+    }
+
+    @Transactional
+    public void saveImportedTransactions(List<TransactionDTO> dtos, User user) {
+        for (TransactionDTO dto : dtos) {
+            Transaction transaction = new Transaction();
+            transaction.setDescription(dto.description());
+            transaction.setAmount(dto.amount());
+            transaction.setTransactionDate(dto.transactionDate());
+            transaction.setType(dto.type());
+            transaction.setUser(user);
+            transaction.setSource(TransactionSource.EMAIL_IMPORT); // Marca como importada por email
+            transactionRepository.save(transaction);
+        }
     }
 }
 

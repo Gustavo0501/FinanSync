@@ -21,7 +21,7 @@ import java.sql.Connection;
  * Primeiro controller para testar se a API está funcionando
  */
 @RestController
-@RequestMapping("/health")
+@RequestMapping("/api/health")
 @Tag(name = "Health Check", description = "Endpoints para verificação de saúde da aplicação")
 public class HealthController {
 

@@ -3,12 +3,16 @@ package com.gustavo.finansync.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -32,23 +36,27 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos
                         .requestMatchers(
-                                "/health/**",
-                                "/auth/**",
-                                "/transactions/**",
+                                "/api/health/**",
+                                "/api/auth/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/api/gmail/oauth2callback",
+                                "/api/error"
                         ).permitAll()
-                        // Todas as outras requisições exigem autenticação
+                        .requestMatchers(
+                                "/api/gmail/authorize-url",
+                                "/api/transactions/**"
+                        ).authenticated()
                         .anyRequest().authenticated()
-                );
-                // Habilita a validação de tokens JWT
-                //http.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
-                http.oauth2ResourceServer(oauth2 -> oauth2.jwt());
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt())
+                .anonymous();
 
         return http.build();
     }
@@ -72,12 +80,6 @@ public class SecurityConfig {
         return source;
     }
 
-    /*@Bean
-    public JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKey = new SecretKeySpec("${jwtSecret}".getBytes(), "HmacSHA256");
-        return NimbusJwtDecoder.withSecretKey(secretKey).build();
-    }*/
-
     @Bean
     public JwtDecoder jwtDecoder() {
         // **A CORREÇÃO ESTÁ AQUI**
@@ -89,4 +91,19 @@ public class SecurityConfig {
 
         return NimbusJwtDecoder.withSecretKey(secretKey).build();
     }
+
+    @Bean
+    OAuth2AuthorizedClientManager authorizedClientManager(
+            ClientRegistrationRepository registrations,
+            OAuth2AuthorizedClientRepository clients) {
+        var provider = OAuth2AuthorizedClientProviderBuilder.builder()
+                .authorizationCode()
+                .refreshToken()
+                .build();
+
+        var manager = new DefaultOAuth2AuthorizedClientManager(registrations, clients);
+        manager.setAuthorizedClientProvider(provider);
+        return manager;
+    }
+
 }

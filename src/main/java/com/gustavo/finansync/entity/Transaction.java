@@ -1,10 +1,7 @@
 package com.gustavo.finansync.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -31,7 +28,6 @@ public class Transaction {
     private String description;
 
     @NotNull(message = "Valor é obrigatório")
-    @DecimalMin(value = "0.01", message = "Valor deve ser maior que zero")
     @Column(name = "amount", nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
@@ -78,6 +74,14 @@ public class Transaction {
         this.transactionDate = transactionDate;
         this.user = user;
     }
+
+    @AssertTrue(message = "Receitas devem ser positivas e despesas negativas")
+    public boolean isAmountValid() {
+        if (type == TransactionType.RECEITA) return amount.compareTo(BigDecimal.ZERO) > 0;
+        if (type == TransactionType.DESPESA) return amount.compareTo(BigDecimal.ZERO) < 0;
+        return true;
+    }
+
 
     // Getters e Setters
     public Long getId() { return id; }
