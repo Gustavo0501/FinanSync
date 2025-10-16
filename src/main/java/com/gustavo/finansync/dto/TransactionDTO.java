@@ -7,6 +7,7 @@ import java.time.LocalDate;
 public record TransactionDTO(
         Long id,
         String description,
+        String category,
         BigDecimal amount,
         LocalDate transactionDate,
         TransactionType type

@@ -59,20 +59,21 @@ public class Transaction {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @Size(max = 255, message = "Categoria deve ter no máximo 255 caracteres")
+    @Column(name = "category", nullable = true)
+    private String category;
 
     // Construtores
     public Transaction() {}
 
     public Transaction(String description, BigDecimal amount, TransactionType type,
-                       LocalDate transactionDate, User user) {
+                       LocalDate transactionDate, User user, String category) {
         this.description = description;
         this.amount = amount;
         this.type = type;
         this.transactionDate = transactionDate;
         this.user = user;
+        this.category = category;
     }
 
     @AssertTrue(message = "Receitas devem ser positivas e despesas negativas")
@@ -99,6 +100,9 @@ public class Transaction {
     public LocalDate getTransactionDate() { return transactionDate; }
     public void setTransactionDate(LocalDate transactionDate) { this.transactionDate = transactionDate; }
 
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
     public TransactionSource getSource() { return source; }
     public void setSource(TransactionSource source) { this.source = source; }
 
@@ -114,6 +118,4 @@ public class Transaction {
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
 
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
 }

@@ -17,43 +17,6 @@ import java.util.List;
 
 @Service
 public class CsvParsingService {
-    /*public List<TransactionDTO> parseCsv(InputStream csvInputStream) throws Exception {
-        List<TransactionDTO> transactions = new ArrayList<>();
-        try (CSVReader reader = new CSVReader(new InputStreamReader(csvInputStream, "UTF-8"))) {
-            String[] line;
-            int lineNumber = 0;
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            // Pular as 5 primeiras linhas (4 metadados + 1 cabeçalho)
-            while (lineNumber < 5 && (line = reader.readNext()) != null) {
-                lineNumber++;
-            }
-            // Agora, processar as transações
-            while ((line = reader.readNext()) != null) {
-                if (line.length < 5) continue; // Linha inválida
-                // Campos: Data Lançamento;Histórico;Descrição;Valor;Saldo
-                String dataStr = line[0].trim();
-                String historico = line[1].trim();
-                String descricao = line[2].trim();
-                String valorStr = line[3].replace(".", "").replace(",", ".").trim(); // Corrige separador decimal
-                // Monta a descrição final
-                String fullDescription = historico + " - " + descricao;
-                // Data
-                LocalDate date = LocalDate.parse(dataStr, formatter);
-                // Valor
-                BigDecimal amount = new BigDecimal(valorStr);
-                // Tipo: crédito se valor > 0, débito se < 0
-                TransactionType type = amount.signum() >= 0 ? TransactionType.RECEITA : TransactionType.DESPESA;
-                transactions.add(new TransactionDTO(
-                        null, // id
-                        fullDescription,
-                        amount,
-                        date,
-                        type
-                ));
-            }
-        }
-        return transactions;
-    }*/
     public List<TransactionDTO> parseCsv(InputStream csvInputStream) throws Exception {
         List<TransactionDTO> transactions = new ArrayList<>();
         BufferedReader reader = new BufferedReader(new InputStreamReader(csvInputStream, StandardCharsets.UTF_8));
@@ -79,6 +42,7 @@ public class CsvParsingService {
                 transactions.add(new TransactionDTO(
                         null, // id
                         fullDescription,
+                        null,
                         amount,
                         date,
                         type

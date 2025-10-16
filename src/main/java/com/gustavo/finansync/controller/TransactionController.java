@@ -5,10 +5,15 @@ import com.gustavo.finansync.entity.User;
 import com.gustavo.finansync.service.TransactionService;
 import com.gustavo.finansync.service.UserService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -33,18 +38,18 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDto);
     }
 
-    @GetMapping
-    public ResponseEntity<Page<TransactionDTO>> getAllTransactions(
+    @GetMapping("/all")
+    public ResponseEntity<List<TransactionDTO>> getAllFilteredTransactions(
             @RequestParam(required = false, defaultValue = "") String description,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             Authentication authentication) {
 
         User user = userService.findByEmail(authentication.getName());
-        // O método no seu TransactionService precisa ser ajustado para filtrar por usuário
-        Page<TransactionDTO> transactions = transactionService.findAllByUser(user, description, page, size);
+        List<TransactionDTO> transactions = transactionService.findAllByUserNoPagination(user, description, startDate, endDate);
         return ResponseEntity.ok(transactions);
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<TransactionDTO> updateTransaction(@PathVariable Long id, @RequestBody TransactionDTO dto, Authentication authentication) {
@@ -67,5 +72,22 @@ public class TransactionController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+    @GetMapping
+    public ResponseEntity<Page<TransactionDTO>> getAllTransactions(
+            @RequestParam(required = false, defaultValue = "") String description,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication) {
+
+        User user = userService.findByEmail(authentication.getName());
+        Page<TransactionDTO> transactions = transactionService.findByDateRange(
+                user, description, startDate, endDate, page, size
+        );
+        return ResponseEntity.ok(transactions);
+    }
+
 }
 

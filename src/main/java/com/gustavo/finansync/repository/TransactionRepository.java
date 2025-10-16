@@ -1,12 +1,12 @@
 package com.gustavo.finansync.repository;
 
-import com.gustavo.finansync.entity.Category;
 import com.gustavo.finansync.entity.Transaction;
 import com.gustavo.finansync.entity.TransactionType;
 import com.gustavo.finansync.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -21,7 +21,7 @@ import java.util.Optional;
  * Inclui consultas complexas para relatórios e dashboard
  */
 @Repository
-public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+public interface TransactionRepository extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
 
     Optional<Transaction> findByIdAndUser(Long id, User user);
 
@@ -56,16 +56,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             User user, LocalDate startDate, LocalDate endDate, Pageable pageable);
 
     /**
-     * Busca transações por categoria
-     * @param user Usuário proprietário
-     * @param category Categoria da transação
-     * @param pageable Configuração de paginação
-     * @return Transações da categoria especificada
-     */
-    Page<Transaction> findByUserAndCategoryOrderByTransactionDateDesc(
-            User user, Category category, Pageable pageable);
-
-    /**
      * Busca transações por descrição (busca textual)
      * @param user Usuário proprietário
      * @param description Texto a ser buscado na descrição
@@ -93,6 +83,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("endDate") LocalDate endDate
     );
 
+    /*
     /**
      * Agrupa transações por categoria para gráficos
      * @param user Usuário proprietário
@@ -101,18 +92,18 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      * @param endDate Data final
      * @return Lista com categoria e soma por categoria
      */
-    @Query("SELECT c.name, COALESCE(SUM(t.amount), 0) FROM Transaction t " +
+    /*@Query("SELECT c, COALESCE(SUM(t.amount), 0) FROM Transaction t " +
             "JOIN t.category c " +
             "WHERE t.user = :user AND t.type = :type AND " +
             "t.transactionDate BETWEEN :startDate AND :endDate " +
-            "GROUP BY c.id, c.name " +
+            "GROUP BY c " +
             "ORDER BY SUM(t.amount) DESC")
     List<Object[]> sumAmountByCategoryAndPeriod(
             @Param("user") User user,
             @Param("type") TransactionType type,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
-    );
+    );*/
 
     /**
      * Verifica se existe transação importada de email específico
@@ -128,4 +119,25 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
      * @return Número total de transações
      */
     long countByUser(User user);
+
+    // Filtrar por usuário, descrição e intervalo de datas
+    Page<Transaction> findByUserAndDescriptionContainingIgnoreCaseAndTransactionDateBetweenOrderByTransactionDateDesc(
+            User user, String description, LocalDate startDate, LocalDate endDate, Pageable pageable);
+
+    // Filtrar por usuário e data >= início
+    Page<Transaction> findByUserAndTransactionDateGreaterThanEqualOrderByTransactionDateDesc(
+            User user, LocalDate startDate, Pageable pageable);
+
+    // Filtrar por usuário, descrição e data >= início
+    Page<Transaction> findByUserAndDescriptionContainingIgnoreCaseAndTransactionDateGreaterThanEqualOrderByTransactionDateDesc(
+            User user, String description, LocalDate startDate, Pageable pageable);
+
+    // Filtrar por usuário e data <= fim
+    Page<Transaction> findByUserAndTransactionDateLessThanEqualOrderByTransactionDateDesc(
+            User user, LocalDate endDate, Pageable pageable);
+
+    // Filtrar por usuário, descrição e data <= fim
+    Page<Transaction> findByUserAndDescriptionContainingIgnoreCaseAndTransactionDateLessThanEqualOrderByTransactionDateDesc(
+            User user, String description, LocalDate endDate, Pageable pageable);
+
 }
